@@ -1,0 +1,66 @@
+---
+title: "Data Cleaning"
+output: html_notebook
+---
+
+```{r}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(doParallel)
+cl <- makePSOCKcluster(7)
+registerDoParallel(cl)
+
+library(keras)
+library(fastDummies)
+library(tidyverse)
+```
+
+load the data
+```{r}
+raw_data <- read.csv2("./Dataset-part-2.csv", header = TRUE, row.names=NULL, sep=",")
+my_data <- raw_data
+```
+
+investigate the data
+```{r}
+summary(my_data)
+colSums(is.na(my_data)) # occupation type is the only one with NA
+
+```
+
+dummy columns (easy to do)
+```{r}
+my_data <- dummy_columns(my_data, select_columns = "CODE_GENDER", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "FLAG_OWN_CAR", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "FLAG_OWN_REALTY", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "FLAG_MOBIL", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "FLAG_WORK_PHONE", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "FLAG_PHONE", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "FLAG_EMAIL", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "NAME_INCOME_TYPE", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "NAME_EDUCATION_TYPE", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "NAME_FAMILY_STATUS", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "NAME_HOUSING_TYPE", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+my_data <- dummy_columns(my_data, select_columns = "OCCUPATION_TYPE", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
+```
+
+fix data type
+```{r}
+head(my_data$AMT_INCOME_TOTAL)
+my_data$AMT_INCOME_TOTAL <- as.integer(my_data$AMT_INCOME_TOTAL)
+summary(my_data$AMT_INCOME_TOTAL)
+head(my_data$NAME_INCOME_TYPE)
+ggplot() +
+  geom_histogram(data = my_data, aes(x = AMT_INCOME_TOTAL))
+my_data$AMT_INCOME_TOTAL <- ifelse(my_data$AMT_INCOME_TOTAL >= 1000000, my_data$AMT_INCOME_TOTAL / 100, my_data$AMT_INCOME_TOTAL)
+
+```
+
+summary(my_data)
+levels(factor(my_data$status)) # these are my y-values
+
+colSums(is.na(my_data))
+
